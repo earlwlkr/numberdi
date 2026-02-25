@@ -10,12 +10,9 @@ export const deleteStale = internalMutation({
     let deleted = 0;
 
     for (const session of sessions) {
-      const isStale =
-        session._creationTime < cutoff && session.status !== "finished";
-      const isOldFinished =
-        session._creationTime < cutoff && session.status === "finished";
-
-      if (!isStale && !isOldFinished) continue;
+      // Only delete if no activity for over an hour
+      const lastActivity = session.lastActivityAt ?? session._creationTime;
+      if (lastActivity > cutoff) continue;
 
       // Delete all claims for this session
       const claims = await ctx.db

@@ -31,6 +31,7 @@ export const join = mutation({
       score: 0,
       nextTarget: 1,
     });
+    await ctx.db.patch(args.sessionId, { lastActivityAt: Date.now() });
     return id;
   },
 });

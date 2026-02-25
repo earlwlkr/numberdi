@@ -22,6 +22,7 @@ export const create = mutation({
       maxNumber: args.maxNumber ?? 100,
       seed,
       hostPlayerId: args.hostPlayerId,
+      lastActivityAt: Date.now(),
     });
     return { id, code };
   },
@@ -53,7 +54,7 @@ export const startCountdown = mutation({
     if (session.hostPlayerId !== args.playerId) throw new Error("Only host can start");
     if (session.status !== "lobby") throw new Error("Game already started");
 
-    await ctx.db.patch(args.sessionId, { status: "countdown", startedAt: Date.now() });
+    await ctx.db.patch(args.sessionId, { status: "countdown", startedAt: Date.now(), lastActivityAt: Date.now() });
     await ctx.scheduler.runAfter(4000, internal.sessions.startGame, {
       sessionId: args.sessionId,
     });

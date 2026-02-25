@@ -67,7 +67,9 @@ export const claimNumber = mutation({
 
     // Check if game is over (all numbers claimed)
     if (claims.length + 1 >= session.maxNumber) {
-      await ctx.db.patch(args.sessionId, { status: "finished" });
+      await ctx.db.patch(args.sessionId, { status: "finished", lastActivityAt: Date.now() });
+    } else {
+      await ctx.db.patch(args.sessionId, { lastActivityAt: Date.now() });
     }
 
     return { success: true };

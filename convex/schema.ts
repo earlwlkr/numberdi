@@ -14,6 +14,7 @@ export default defineSchema({
     seed: v.number(),
     hostPlayerId: v.string(),
     startedAt: v.optional(v.number()),
+    lastActivityAt: v.optional(v.number()),
   }).index("by_code", ["code"]),
 
   players: defineTable({
