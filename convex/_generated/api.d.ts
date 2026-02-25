@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as cleanup from "../cleanup.js";
+import type * as crons from "../crons.js";
 import type * as game from "../game.js";
 import type * as players from "../players.js";
 import type * as sessions from "../sessions.js";
@@ -19,6 +21,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cleanup: typeof cleanup;
+  crons: typeof crons;
   game: typeof game;
   players: typeof players;
   sessions: typeof sessions;
