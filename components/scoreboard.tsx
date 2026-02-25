@@ -14,24 +14,24 @@ export function Scoreboard({ players, session, myNextTarget, playerId }: Scorebo
   const sorted = [...players].sort((a, b) => b.score - a.score);
 
   return (
-    <div className="flex items-center gap-4 flex-wrap justify-center">
+    <div className="flex items-center gap-2 flex-wrap justify-center">
       {sorted.map((p) => (
         <div
           key={p._id}
-          className={`glass px-4 py-2 flex items-center gap-2 ${
+          className={`glass px-2 py-1 sm:px-4 sm:py-2 flex items-center gap-1.5 ${
             p.playerId === playerId ? "ring-1 ring-white/30" : ""
           }`}
         >
           <div
-            className="w-3 h-3 rounded-full"
+            className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: getPlayerColor(p.colorIndex) }}
           />
-          <span className="font-medium text-sm">{p.name}</span>
-          <span className="font-bold text-lg">{p.score}</span>
+          <span className="font-medium text-xs sm:text-sm">{p.name}</span>
+          <span className="font-bold text-sm sm:text-lg">{p.score}</span>
         </div>
       ))}
-      <div className="glass px-4 py-2 text-sm text-white/60">
-        Find: <span className="font-bold text-white text-lg">{myNextTarget > session.maxNumber ? "Done!" : myNextTarget}</span>
+      <div className="glass px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm text-white/60">
+        Find: <span className="font-bold text-white text-sm sm:text-lg">{myNextTarget > session.maxNumber ? "Done!" : myNextTarget}</span>
       </div>
     </div>
   );

@@ -19,8 +19,8 @@ interface GameBoardProps {
 }
 
 export function GameBoard({ session, players, playerId }: GameBoardProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0);
   const claims = useQuery(api.game.getClaims, { sessionId: session._id }) ?? [];
   const me = players.find((p) => p.playerId === playerId);
   const claimNumber = useMutation(api.game.claimNumber);
@@ -44,16 +44,12 @@ export function GameBoard({ session, players, playerId }: GameBoardProps) {
     return target;
   })();
 
-  // Fit board to fill the available space below the scoreboard
+  // Measure the wrapper div that fills remaining space, scale board to fit
   useEffect(() => {
     function resize() {
-      if (!containerRef.current) return;
-      const parent = containerRef.current.parentElement;
-      if (!parent) return;
-      // Use the full parent dimensions minus some padding
-      const pw = parent.clientWidth;
-      const ph = parent.clientHeight;
-      const s = Math.min(pw / BOARD_WIDTH, ph / BOARD_HEIGHT, 1);
+      if (!wrapperRef.current) return;
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const s = Math.min(rect.width / BOARD_WIDTH, rect.height / BOARD_HEIGHT);
       setScale(s);
     }
     resize();
@@ -78,41 +74,42 @@ export function GameBoard({ session, players, playerId }: GameBoardProps) {
 
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
-      <div className="shrink-0 p-3">
+      <div className="shrink-0 p-2">
         <Scoreboard players={players} session={session} myNextTarget={myNextTarget} playerId={playerId} />
       </div>
 
-      <div className="flex-1 flex items-center justify-center min-h-0 p-2">
-        <div
-          ref={containerRef}
-          className="relative glass overflow-hidden"
-          style={{
-            width: BOARD_WIDTH * scale,
-            height: BOARD_HEIGHT * scale,
-          }}
-        >
+      <div ref={wrapperRef} className="flex-1 flex items-center justify-center min-h-0 p-1">
+        {scale > 0 && (
           <div
-            className="absolute origin-top-left"
+            className="relative glass overflow-hidden"
             style={{
-              width: BOARD_WIDTH,
-              height: BOARD_HEIGHT,
-              transform: `scale(${scale})`,
+              width: BOARD_WIDTH * scale,
+              height: BOARD_HEIGHT * scale,
             }}
           >
-            {positions.map((pos) => (
-              <NumberTile
-                key={pos.number}
-                number={pos.number}
-                x={pos.x}
-                y={pos.y}
-                claimedByColorIndex={claimMap.get(pos.number) ?? null}
-                isMyTarget={pos.number === myNextTarget}
-                isMyClaimedTile={pos.number === lastClaimed}
-                onClick={() => handleClick(pos.number)}
-              />
-            ))}
+            <div
+              className="absolute origin-top-left"
+              style={{
+                width: BOARD_WIDTH,
+                height: BOARD_HEIGHT,
+                transform: `scale(${scale})`,
+              }}
+            >
+              {positions.map((pos) => (
+                <NumberTile
+                  key={pos.number}
+                  number={pos.number}
+                  x={pos.x}
+                  y={pos.y}
+                  claimedByColorIndex={claimMap.get(pos.number) ?? null}
+                  isMyTarget={pos.number === myNextTarget}
+                  isMyClaimedTile={pos.number === lastClaimed}
+                  onClick={() => handleClick(pos.number)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
