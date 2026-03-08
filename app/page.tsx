@@ -16,6 +16,7 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [mode, setMode] = useState<"menu" | "create" | "join">("menu");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setName(generateRandomName());
@@ -24,16 +25,28 @@ export default function Home() {
   async function handleCreate() {
     if (!playerId || !name.trim()) return;
     setLoading(true);
-    const { code } = await createSession({ hostPlayerId: playerId });
-    // Store name for use on game page
-    sessionStorage.setItem("numberdi-name", name.trim());
-    router.push(`/game/${code}`);
+    setError(null);
+    try {
+      const { code } = await createSession({ hostPlayerId: playerId });
+      // Store name for use on game page
+      sessionStorage.setItem("numberdi-name", name.trim());
+      router.push(`/game/${code}`);
+    } catch {
+      setError("Could not create a game. Please try again.");
+      setLoading(false);
+    }
   }
 
   async function handleJoin() {
-    if (!joinCode.trim() || !name.trim()) return;
+    if (!name.trim()) return;
+    const normalizedCode = joinCode.trim().toUpperCase();
+    if (!/^[A-Z0-9]{6}$/.test(normalizedCode)) {
+      setError("Enter a valid 6-character game code.");
+      return;
+    }
+    setError(null);
     sessionStorage.setItem("numberdi-name", name.trim());
-    router.push(`/game/${joinCode.toUpperCase()}`);
+    router.push(`/game/${normalizedCode}`);
   }
 
   return (
@@ -51,11 +64,12 @@ export default function Home() {
               placeholder="Your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               maxLength={20}
               className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/40"
             />
             <button
-              onClick={() => name.trim() ? handleCreate() : undefined}
+              onClick={handleCreate}
               disabled={!name.trim() || !playerId || loading}
               className="w-full py-3 rounded-xl bg-white/20 hover:bg-white/30 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -77,7 +91,10 @@ export default function Home() {
               type="text"
               placeholder="Game code"
               value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onChange={(e) =>
+                setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+              }
+              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
               maxLength={6}
               className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/40 text-center text-2xl tracking-widest font-mono"
             />
@@ -95,6 +112,12 @@ export default function Home() {
               Back
             </button>
           </div>
+        )}
+
+        {error && (
+          <p className="text-center text-red-200/90 text-sm" role="alert">
+            {error}
+          </p>
         )}
       </div>
     </div>
