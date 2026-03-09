@@ -27,29 +27,40 @@ export default function GamePage({
   const [joined, setJoined] = useState(false);
   const [namePrompt, setNamePrompt] = useState(false);
   const [name, setName] = useState(() => generateRandomName());
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   // Auto-join when session and playerId are ready
   useEffect(() => {
     if (!session || !playerId || joined) return;
     const storedName = sessionStorage.getItem("numberdi-name");
     if (storedName) {
-      joinGame({ sessionId: session._id, playerId, name: storedName }).then(
-        () => setJoined(true)
-      );
+      void (async () => {
+        try {
+          setJoinError(null);
+          await joinGame({ sessionId: session._id, playerId, name: storedName });
+          setJoined(true);
+        } catch {
+          setJoinError("Could not join this game. Please re-enter your name.");
+          setName(storedName);
+          setNamePrompt(true);
+        }
+      })();
     } else {
       setNamePrompt(true);
     }
   }, [session, playerId, joined, joinGame]);
 
-  function handleNameSubmit() {
+  async function handleNameSubmit() {
     if (!session || !playerId || !name.trim()) return;
     sessionStorage.setItem("numberdi-name", name.trim());
-    joinGame({ sessionId: session._id, playerId, name: name.trim() }).then(
-      () => {
-        setJoined(true);
-        setNamePrompt(false);
-      }
-    );
+    try {
+      setJoinError(null);
+      await joinGame({ sessionId: session._id, playerId, name: name.trim() });
+      setJoined(true);
+      setNamePrompt(false);
+    } catch {
+      setJoinError("Could not join this game. Please try again.");
+    }
   }
 
   // Loading state
@@ -88,6 +99,11 @@ export default function GamePage({
           >
             Join Game
           </button>
+          {joinError && (
+            <p className="text-center text-red-200/90 text-sm" role="alert">
+              {joinError}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -97,7 +113,7 @@ export default function GamePage({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass p-8">
-          <p className="text-white/60">Joining...</p>
+          <p className="text-white/60">{joinError ?? "Joining..."}</p>
         </div>
       </div>
     );
