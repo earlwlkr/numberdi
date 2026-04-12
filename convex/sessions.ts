@@ -69,3 +69,14 @@ export const startGame = internalMutation({
     await ctx.db.patch(args.sessionId, { status: "playing" });
   },
 });
+
+export const endGame = mutation({
+  args: { sessionId: v.id("sessions"), playerId: v.string() },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.hostPlayerId !== args.playerId) throw new Error("Only host can end the game");
+    if (session.status !== "playing") throw new Error("Game is not in progress");
+    await ctx.db.patch(args.sessionId, { status: "finished", lastActivityAt: Date.now() });
+  },
+});

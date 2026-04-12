@@ -5,12 +5,12 @@ import { getPlayerColor } from "@/lib/game-utils";
 
 interface ScoreboardProps {
   players: Doc<"players">[];
-  session: Doc<"sessions">;
-  myNextTarget: number;
   playerId: string;
+  /** Shown when this player has claimed every number through max in order. */
+  showDoneBadge: boolean;
 }
 
-export function Scoreboard({ players, session, myNextTarget, playerId }: ScoreboardProps) {
+export function Scoreboard({ players, playerId, showDoneBadge }: ScoreboardProps) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
 
   return (
@@ -30,9 +30,11 @@ export function Scoreboard({ players, session, myNextTarget, playerId }: Scorebo
           <span className="font-bold text-sm sm:text-lg">{p.score}</span>
         </div>
       ))}
-      <div className="glass px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm text-white/60">
-        Find: <span className="font-bold text-white text-sm sm:text-lg">{myNextTarget > session.maxNumber ? "Done!" : myNextTarget}</span>
-      </div>
+      {showDoneBadge && (
+        <div className="glass px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold text-white">
+          Done!
+        </div>
+      )}
     </div>
   );
 }

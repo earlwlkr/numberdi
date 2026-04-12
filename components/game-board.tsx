@@ -24,7 +24,9 @@ export function GameBoard({ session, players, playerId }: GameBoardProps) {
   const claims = useQuery(api.game.getClaims, { sessionId: session._id }) ?? [];
   const me = players.find((p) => p.playerId === playerId);
   const claimNumber = useMutation(api.game.claimNumber);
+  const endGame = useMutation(api.sessions.endGame);
   const [lastClaimed, setLastClaimed] = useState<number | null>(null);
+  const isHost = session.hostPlayerId === playerId;
 
   const positions = generatePositions(session.seed, session.maxNumber);
 
@@ -74,8 +76,21 @@ export function GameBoard({ session, players, playerId }: GameBoardProps) {
 
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
-      <div className="shrink-0 p-2">
-        <Scoreboard players={players} session={session} myNextTarget={myNextTarget} playerId={playerId} />
+      <div className="shrink-0 p-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <Scoreboard
+          players={players}
+          playerId={playerId}
+          showDoneBadge={me != null && myNextTarget > session.maxNumber}
+        />
+        {isHost && (
+          <button
+            type="button"
+            onClick={() => void endGame({ sessionId: session._id, playerId })}
+            className="shrink-0 self-center sm:self-auto px-4 py-2 rounded-xl bg-red-500/25 hover:bg-red-500/35 text-sm font-semibold text-red-100 border border-red-400/30 transition-colors"
+          >
+            End game
+          </button>
+        )}
       </div>
 
       <div ref={wrapperRef} className="flex-1 flex items-center justify-center min-h-0 p-1">
@@ -102,7 +117,6 @@ export function GameBoard({ session, players, playerId }: GameBoardProps) {
                   x={pos.x}
                   y={pos.y}
                   claimedByColorIndex={claimMap.get(pos.number) ?? null}
-                  isMyTarget={pos.number === myNextTarget}
                   isMyClaimedTile={pos.number === lastClaimed}
                   onClick={() => handleClick(pos.number)}
                 />
