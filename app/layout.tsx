@@ -5,8 +5,8 @@ import { ConvexClientProvider } from "@/components/convex-client-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Number Find",
-  description: "Race to find numbers 1-100 in order!",
+  title: "Numberdi",
+  description: "Fast multiplayer number-order race with private rooms, countdowns, and winner results.",
 };
 
 export default function RootLayout({
